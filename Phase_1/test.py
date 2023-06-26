@@ -42,7 +42,7 @@ def create_CIFAR10_loader(n_examples = n_examples ,batch_size = batch_size, shuf
     
     return test_loader
 
-def cifar10_test(device, model_name: str = 'ResNet18',batch_size = batch_size, n_examples = n_examples):
+def cifar10_test(device, model_name: str = 'ResNet18',batch_size = batch_size, n_examples = n_examples,checkpoint_type: str='pth'):
     batch_size = batch_size
     os.makedirs(os.path.join('data', 'torchvision'), exist_ok=True)
     os.makedirs(os.path.join('results', 'cifar10'), exist_ok=True)
@@ -52,19 +52,35 @@ def cifar10_test(device, model_name: str = 'ResNet18',batch_size = batch_size, n
     test_dataset = torch.utils.data.TensorDataset(images, labels)
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
-
-    if model_name == 'ResNet18':
-        model = ResNet18()
-        model = nn.DataParallel(model)
-        checkpoint = torch.load(r"C:\Users\AliReza\Dropbox\Farnia\src\models\state_dicts\resnet18_kualingu.pth")
-        model.load_state_dict(checkpoint['net'])
-        model = normalize_model(model, mean = (.4914, 0.4822, 0.4465), std = (0.2023, 0.1994, 0.2010))
-    elif model_name == 'vgg':
-        model = vgg16_bn(pretrained=True)
-        model = normalize_model(model, mean = (.4914, 0.4822, 0.4465), std = (0.2471, 0.2435, 0.2616))
+    if  checkpoint_type == 'pth':
+        if model_name == 'ResNet18' :
+            model = ResNet18()
+            model = nn.DataParallel(model)
+            checkpoint = torch.load(r"C:\Users\AliReza\Dropbox\Farnia\src\models\state_dicts\resnet18_kualingu.pth")
+            model.load_state_dict(checkpoint['net'])
+            model = normalize_model(model, mean = (.4914, 0.4822, 0.4465), std = (0.2023, 0.1994, 0.2010))
+        elif model_name == 'vgg' :
+            model = vgg16_bn(pretrained=True)
+            model = normalize_model(model, mean = (.4914, 0.4822, 0.4465), std = (0.2471, 0.2435, 0.2616))
+            
+        else:
+            raise ValueError(f"Model {model_name} not found")
+    
+    elif  checkpoint_type == 'pt':
+        if model_name == 'ResNet18':
+            model = ResNet18()
+            model = nn.DataParallel(model) # note that please check the repo, if it uses the Dataprallel use this line!
+            model.load_state_dict(torch.load(r"ckpth.pth"))
+            model = normalize_model(model, mean = (.4914, 0.4822, 0.4465), std = (0.2023, 0.1994, 0.2010))
+        elif model_name == 'vgg':
+            model = vgg16_bn(pretrained=True)
+            model = nn.DataParallel(model) # note that please check the repo, if it uses the Dataprallel use this line!
+            model.load_state_dict(torch.load(r"ckpth.pth"))
+            model = normalize_model(model, mean = (.4914, 0.4822, 0.4465), std = (0.2471, 0.2435, 0.2616))
+            
+        else:
+            raise ValueError(f"Model {model_name} not found")
         
-    else:
-        raise ValueError(f"Model {model_name} not found")
     
     torch.cuda.empty_cache()
     accuracy_orig = clean_accuracy(model.to(device), images.to(device), labels.to(device),batch_size=batch_size, device=device)
@@ -80,7 +96,7 @@ print(f"device is :{device}")
 
 
 def main(args = args):
-    model, test_loader = cifar10_test(device, model_name=args.model)
+    model, test_loader = cifar10_test(device, model_name=args.model,checkpoint_type='pth')
 
 
 
