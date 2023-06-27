@@ -70,12 +70,12 @@ def cifar10_test(device, model_name: str = 'ResNet18',batch_size = batch_size, n
         if model_name == 'ResNet18':
             model = ResNet18()
             model = nn.DataParallel(model) # note that please check the repo, if it uses the Dataprallel use this line!
-            model.load_state_dict(torch.load(r"ckpth.pth"))
+            model.load_state_dict(torch.load(r"ckpth.pt"))
             model = normalize_model(model, mean = (.4914, 0.4822, 0.4465), std = (0.2023, 0.1994, 0.2010))
         elif model_name == 'vgg':
             model = vgg16_bn(pretrained=True)
             model = nn.DataParallel(model) # note that please check the repo, if it uses the Dataprallel use this line!
-            model.load_state_dict(torch.load(r"ckpth.pth"))
+            model.load_state_dict(torch.load(r"ckpth.pt"))
             model = normalize_model(model, mean = (.4914, 0.4822, 0.4465), std = (0.2471, 0.2435, 0.2616))
             
         else:
